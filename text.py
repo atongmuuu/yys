@@ -51,7 +51,7 @@ def find_image_on_screen(template_path, threshold=0.7):
     return None
 
 if __name__ == "__main__":
-    gouyu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "jujue.png")
+    gouyu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "guanbi.png")
     start_time = time.time()
     res = find_image_on_screen(gouyu_path)
     print(time.time() - start_time)

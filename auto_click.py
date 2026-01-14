@@ -65,6 +65,7 @@ def random_click(x, y, random_range = 40):
     # 执行点击
     pyautogui.click(click_x, click_y)
 
+
 def xiezuo(shared_gouyu_count, shared_jinbi_count, lock):
     # 一直监听勾玉协作
     gouyu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "gouyu.png")
@@ -97,12 +98,32 @@ def xiezuo(shared_gouyu_count, shared_jinbi_count, lock):
                     time.sleep(1)
 
 def main():
-    start_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "start.png")
     end_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "end.png")
-    shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "shishenlu.png")
     fanhui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "fanhui.png")
-    xiezhan_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "xiezhan.png")
     guanbi_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "guanbi.png")
+    start_path = ""
+    shishenlu_path = ""
+    xiezhan_path = ""
+    choice1 = ""
+    choice2 = ""
+
+    choice1 = input("请输入1或2。1：打活动，2：打御魂或御灵副本: ").strip()
+    if choice1 == "1":
+        choice2 = input("请输入y或n。y：可以点击协战，n：不可以点击协战: ").strip().lower()
+        if choice2 == "y":
+            start_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "hd_start.png")
+            shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "hd_shishenlu.png")
+            xiezhan_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "hd_xiezhan.png")
+            print("当前模式为：打活动副本且可以点击协战界面。请注意：每次打新活动副本前记得更新图标。")
+        else:
+            start_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "hd_start.png")
+            shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "hd_shishenlu.png")
+            print("当前模式为：打活动副本，但是不点击协战界面。请注意：每次打新活动副本前记得更新图标。")
+    else:
+        start_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "yu_start.png")
+        shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "yu_shishenlu.png")
+        print("当前模式为：打御魂或者御灵。")
+        
     run_count = 0
 
     # 启动识别协作子进程，接受勾玉协作，拒绝金币协作
@@ -125,7 +146,7 @@ def main():
                 start_result = find_image_on_screen(start_path)
                 if start_result:
                     # 随机延迟1-3秒内，5%概率点击式神录，5%概率点击协战，10%概率等待5-10秒
-                    possible =  random.random() 
+                    possible =  random.random()
                     if possible < 0.05:
                         print("触发5%概率, 点击式神录并等待10-15s后返回", flush=True)
                         shishenlu_result = find_image_on_screen(shishenlu_path)
@@ -141,8 +162,7 @@ def main():
                             random_click(fanhui_x, fanhui_y)
                         # 等待5s页面加载
                         time.sleep(5)
-                    # elif 0.05 <= possible < 0.1:
-                    elif possible < -0.1: # 用不触发协战图片识别
+                    elif 0.05 <= possible < 0.1 and choice2 == "y":
                         print("触发5%概率, 点击协战并等待10-15s后返回", flush=True)
                         xiezhan_result = find_image_on_screen(xiezhan_path)
                         if xiezhan_result:
@@ -151,7 +171,7 @@ def main():
                         # 等待10-15s并等待页面加载
                         time.sleep(random.uniform(10, 15))
                         # 点击返回
-                        guanbi_result = find_image_on_screen(guanbi_path)
+                        guanbi_result = find_image_on_screen(guanbi_path, 0.7)
                         if guanbi_result:
                             guanbi_x, guanbi_y = guanbi_result
                             random_click(guanbi_x, guanbi_y)
