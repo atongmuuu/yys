@@ -51,8 +51,35 @@ def find_image_on_screen(template_path, threshold=0.7):
     return None
 
 if __name__ == "__main__":
-    gouyu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "guanbi.png")
-    start_time = time.time()
-    res = find_image_on_screen(gouyu_path)
-    print(time.time() - start_time)
-    print(res)
+    kun28_mianju_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_mianju.png")
+    kun28_wuyan_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_wuyan.png")
+    kun28_mianju_result = find_image_on_screen(kun28_mianju_path)
+    if kun28_mianju_result:
+        kun28_mianju_x, kun28_mianju_y = kun28_mianju_result
+        # 鼠标点击kun28_mianju_x, kun28_mianju_y位置并且不松开，然后向左移动700个像素
+        # 确保鼠标不会跑到屏幕外导致异常
+        pyautogui.FAILSAFE = True
+
+        # 点击并按住不放
+        pyautogui.mouseDown(x=kun28_mianju_x, y=kun28_mianju_y)
+
+
+        # 向左移动700像素
+        pyautogui.moveRel(-700, 0, duration=1)  # duration控制移动速度
+
+        # 松开鼠标
+        pyautogui.mouseUp()
+
+    kun28_mianju_result = find_image_on_screen(kun28_wuyan_path)
+    if kun28_mianju_result:
+        kun28_mianju_x, kun28_mianju_y = kun28_mianju_result
+        # 鼠标点击kun28_mianju_x, kun28_mianju_y位置并且不松开，然后向左移动700个像素
+        # 确保鼠标不会跑到屏幕外导致异常
+        pyautogui.FAILSAFE = True
+        # 点击并按住不放
+        pyautogui.mouseDown(x=kun28_mianju_x, y=kun28_mianju_y)
+        # 向左移动700像素
+        pyautogui.moveRel(-700, 0, duration=1)  # duration控制移动速度
+
+        # 松开鼠标
+        pyautogui.mouseUp()
