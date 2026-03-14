@@ -2,8 +2,10 @@ import cv2
 import numpy as np
 import pyautogui
 import os
+import random
+import time
 
-def find_image_on_screen(template_path, threshold=0.7):
+def find_image_on_screen(template_path, threshold=0.8):
     """
     在屏幕上查找指定图像
     
@@ -19,8 +21,8 @@ def find_image_on_screen(template_path, threshold=0.7):
         print(f"模板图像不存在: {template_path}")
         return None
     
-    # 读取模板图像
-    template = cv2.imread(template_path)
+    # 读取模板图像，转换为灰度
+    template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
     if template is None:
         print(f"无法读取模板图像: {template_path}")
         return None
@@ -28,11 +30,12 @@ def find_image_on_screen(template_path, threshold=0.7):
     # 截取屏幕
     screenshot = pyautogui.screenshot()
     screenshot = np.array(screenshot)
-    screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
-    
+    screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2GRAY) # 转换为灰度
     
     # 使用模板匹配
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
+    print(f"最大匹配值：{np.max(result)}")
+    print(result)
     
     # 查找匹配位置
     locations = np.where(result >= threshold)
@@ -41,16 +44,26 @@ def find_image_on_screen(template_path, threshold=0.7):
         # 获取第一个匹配位置
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         top_left = max_loc
-        x = top_left[0]
-        y = top_left[1]
-        print(x,y)
-        cv2.rectangle(screenshot, (x-180, y), (x + 220, y-400), (0, 0, 255), 2)
-        # 显示处理后的图像（可选）
-        cv2.imshow('Detected Image', screenshot)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    
+        return (top_left[0], top_left[1]) 
     return None
 
-gouyu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_damo.png")
-find_image_on_screen(gouyu_path)
+def random_click(x, y, name = "ok", random_range = 40):
+    """
+    在指定区域内随机点击
+    
+    参数:
+        x, y: 区域左上角坐标
+        width, height: 区域宽高
+        random_range: 随机范围，点击位置会在中心点周围random_range像素范围内随机选择
+    """
+    # 在x+random_range和y+random_range内随机点击
+    click_x = x + random.randint(0, random_range)
+    click_y = y + random.randint(0, random_range)
+    print(f"已点击位置: ({click_x}, {click_y}), {name}")
+    # 执行点击
+    pyautogui.click(click_x, click_y)
+
+end2_png = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "tupo_zero.png")
+
+shishenlu_result = find_image_on_screen(end2_png, 0.9)
+print(shishenlu_result)
