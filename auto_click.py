@@ -241,7 +241,7 @@ def detect_huijuan(xiaoHuiJuan_count, zhongHuiJuan_count, daHuiJuan_count,  lock
             time.sleep(4)
 
 
-def detect_end_png(run_count, lock):
+def detect_end_png(run_count, lock, total_count):
     # 一直检测并点击end.png
     end_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "end.png")
     while True:
@@ -257,6 +257,11 @@ def detect_end_png(run_count, lock):
                     run_count.value += 1
                     if run_count.value % 50 == 0:
                         send_feishu_webhook(f"已执行 {run_count.value} 次")
+                    # 如果run_count.value大于total_count，退出脚本
+                    if run_count.value > total_count:
+                        print(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，退出脚本")
+                        send_feishu_webhook(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，脚本已退出")
+                        os._exit(0)
         
 
 def detect_shishenlu_png(png_name):
@@ -329,7 +334,12 @@ def main():
     # 启动识别end.png子进程，点击end.png
     run_count = Value('i', 0)  # 'i' 表示整型
     lock2 = Lock()
-    detect_end_process = Process(target=detect_end_png, args=(run_count, lock2))
+    
+    fanhui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "fanhui.png")
+    choice = input("请输入1或2或3或4。1：打活动，2：打御灵，3：打御魂，4：打困28: ").strip()
+    total_count = int(input("请输入要执行的次数: "))
+    
+    detect_end_process = Process(target=detect_end_png, args=(run_count, lock2, total_count))
     detect_end_process.daemon = True
     detect_end_process.start()
 
@@ -343,8 +353,6 @@ def main():
     detect_shibai_process.daemon = True
     detect_shibai_process.start()
 
-    fanhui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "fanhui.png")
-    choice = input("请输入1或2或3或4。1：打活动，2：打御灵，3：打御魂，4：打困28: ").strip()
     if choice == "1":
         start_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "huodong_start.png")
         shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "huodong_shishenlu.png")
