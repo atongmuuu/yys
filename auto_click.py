@@ -451,34 +451,42 @@ def main():
                     random_click(tupo_start_x, tupo_start_y, tupo_start_path)
                     time.sleep(2)
                     while True:
-                        tupo_youshangjiao_result = find_image_on_screen(tupo_youshangjiao_path, 0.95)
-                        # 突破卷为零的时候
-                        with lock5:
-                            current_tupo_zero_value = tupo_zero_value.value
-                            if current_tupo_zero_value == 1:
-                                print("突破卷为零")
-                                break
-                        if tupo_youshangjiao_result:
-                            tupo_youshangjiao_x, tupo_youshangjiao_y = tupo_youshangjiao_result
-                            random_click(tupo_youshangjiao_x, tupo_youshangjiao_y, tupo_youshangjiao_path, 20, 40)
-                            time.sleep(1)
-                            tupo_jingong_result = find_image_on_screen(tupo_jingong_path)
-                            if tupo_jingong_result:
-                                tupo_jingong_x, tupo_jingong_y = tupo_jingong_result
-                                random_click(tupo_jingong_x, tupo_jingong_y, tupo_jingong_path)
-                        else:
-                            tupo_shuaxin_result = find_image_on_screen(tupo_shuaxin_path)
-                            if tupo_shuaxin_result:
-                                tupo_shuaxin_x, tupo_shuaxin_y = tupo_shuaxin_result
-                                random_click(tupo_shuaxin_x, tupo_shuaxin_y, tupo_shuaxin_path)
+                        # 持续15秒查找tupo_youshangjiao_path
+                        search_start_time = time.time()
+                        while time.time() - search_start_time < 15:
+                            tupo_youshangjiao_result = find_image_on_screen(tupo_youshangjiao_path, 0.9)
+                            # 突破卷为零的时候
+                            with lock5:
+                                if tupo_zero_value.value == 1:
+                                    print("突破卷为零")
+                                    break
+                            if tupo_youshangjiao_result:
+                                tupo_youshangjiao_x, tupo_youshangjiao_y = tupo_youshangjiao_result
+                                random_click(tupo_youshangjiao_x, tupo_youshangjiao_y, tupo_youshangjiao_path, 20, 40)
                                 time.sleep(1)
-                                tupo_queding_result = find_image_on_screen(tupo_queding_path)
-                                if tupo_queding_result:
-                                    tupo_queding_x, tupo_queding_y = tupo_queding_result
-                                    random_click(tupo_queding_x, tupo_queding_y, tupo_queding_path)
-                                    time.sleep(1)
-                    with lock5:
-                        tupo_zero_value.value = 0
+                                tupo_jingong_result = find_image_on_screen(tupo_jingong_path)
+                                if tupo_jingong_result:
+                                    tupo_jingong_x, tupo_jingong_y = tupo_jingong_result
+                                    random_click(tupo_jingong_x, tupo_jingong_y, tupo_jingong_path)
+                                    time.sleep(15)
+                                # 查找到后重新计时
+                                search_start_time = time.time()
+                        # 15秒内未找到tupo_youshangjiao_path，才执行刷新
+                        tupo_shuaxin_result = find_image_on_screen(tupo_shuaxin_path)
+                        if tupo_shuaxin_result:
+                            tupo_shuaxin_x, tupo_shuaxin_y = tupo_shuaxin_result
+                            random_click(tupo_shuaxin_x, tupo_shuaxin_y, tupo_shuaxin_path)
+                            time.sleep(1)
+                            tupo_queding_result = find_image_on_screen(tupo_queding_path)
+                            if tupo_queding_result:
+                                tupo_queding_x, tupo_queding_y = tupo_queding_result
+                                random_click(tupo_queding_x, tupo_queding_y, tupo_queding_path)
+                                time.sleep(1)
+
+                        # 检查是否需要退出外层循环
+                        with lock5:
+                            if tupo_zero_value.value == 1:
+                                break
             time.sleep(5)
             # 识别kun28_ershiba.png
             ershiba_result = find_image_on_screen(kun28_ershiba_path)

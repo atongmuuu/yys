@@ -63,7 +63,7 @@ def random_click(x, y, name = "ok", random_range = 40):
     # 执行点击
     pyautogui.click(click_x, click_y)
 
-end2_png = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "tupo_zero.png")
+end2_png = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "tupo_youshangjiao.png")
 
 shishenlu_result = find_image_on_screen(end2_png, 0.9)
 print(shishenlu_result)
