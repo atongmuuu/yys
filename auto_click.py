@@ -241,28 +241,45 @@ def detect_huijuan(xiaoHuiJuan_count, zhongHuiJuan_count, daHuiJuan_count,  lock
             time.sleep(4)
 
 
-def detect_end_png(run_count, lock, total_count):
-    # 一直检测并点击end.png
-    end_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "end.png")
+def detect_start_png(start_path, run_count, lock, total_count):
+    # 记录最近20秒内的点击时间
+    click_times = deque()
+    # 一直检测并点击start.png
     while True:
-        end_result = find_image_on_screen(end_path)
-        if end_result:
-            time.sleep(3)
-            # 保证end.png触底
-            end_result = find_image_on_screen(end_path)
-            if end_result:
-                end_x, end_y = end_result
-                random_click(end_x, end_y, end_path)
-                with lock:
+        start_result = find_image_on_screen(start_path)
+        if start_result:
+            start_x, start_y = start_result
+            random_click(start_x, start_y, start_path)
+            with lock:
+                # 检查两次点击间隔时间，小于8秒不加1，否则加1
+                current_time = time.time()
+                if not hasattr(detect_start_png, 'last_click_time'):
+                    detect_start_png.last_click_time = 0
+                if current_time - detect_start_png.last_click_time >= 8:
                     run_count.value += 1
-                    if run_count.value % 50 == 0:
-                        send_feishu_webhook(f"已执行 {run_count.value} 次")
-                    # 如果run_count.value大于total_count，退出脚本
-                    if run_count.value > total_count:
-                        print(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，退出脚本")
-                        send_feishu_webhook(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，脚本已退出")
-                        os._exit(0)
-        
+                    detect_start_png.last_click_time = current_time
+                print(f"已执行 {run_count.value} 次")
+                if run_count.value % 50 == 0:
+                    send_feishu_webhook(f"已执行 {run_count.value} 次")
+                # 如果run_count.value大于total_count，退出脚本
+                if run_count.value > total_count:
+                    print(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，退出脚本")
+                    send_feishu_webhook(f"已执行 {run_count.value} 次，超过设定的 {total_count} 次，脚本已退出")
+                    os._exit(0)
+            now = time.time()
+            # 记录本次点击时间
+            click_times.append(now)
+            # 移除20秒前的记录
+            if click_times and click_times[0] < now - 20:
+                click_times.popleft()
+            # 如果20秒内点击次数>=6，终止脚本
+            if len(click_times) >= 6:
+                print("20秒内点击次数超过6次，终止脚本")
+                send_feishu_webhook("20秒内点击次数超过6次，门票用光，终止脚本")
+                os._exit(0)
+            time.sleep(2)
+
+
 
 def detect_shishenlu_png(png_name):
     # 一直检测并点击shishenlu.png
@@ -284,26 +301,13 @@ def detect_shishenlu_png(png_name):
 
 
 def detect_png(png_name):
-    # 记录最近20秒内的点击时间
-    click_times = deque()
     png_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", png_name)
     while True:
-        time.sleep(2)
         png_result = find_image_on_screen(png_path)
         if png_result:
             png_x, png_y = png_result
             random_click(png_x, png_y, png_path)
-            now = time.time()
-            # 记录本次点击时间
-            click_times.append(now)
-            # 移除20秒前的记录
-            if click_times and click_times[0] < now - 20:
-                click_times.popleft()
-            # 如果20秒内点击次数>=6，终止脚本
-            if len(click_times) >= 6:
-                print("20秒内点击次数超过6次，终止脚本")
-                send_feishu_webhook("20秒内点击次数超过6次，门票用光，终止脚本")
-                os._exit(0)
+            time.sleep(1)
 
 
 def detect_tupo_zero(tupo_zero_value, lock):
@@ -331,15 +335,12 @@ def main():
     detect_gouyu_process.daemon = True
     detect_gouyu_process.start()
 
-    # 启动识别end.png子进程，点击end.png
-    run_count = Value('i', 0)  # 'i' 表示整型
-    lock2 = Lock()
-    
     fanhui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "fanhui.png")
     choice = input("请输入1或2或3或4。1：打活动，2：打御灵，3：打御魂，4：打困28: ").strip()
     total_count = int(input("请输入要执行的次数: "))
-    
-    detect_end_process = Process(target=detect_end_png, args=(run_count, lock2, total_count))
+
+    # 启动识别end.png子进程，点击end.png。用于没有end.png时，点击end.png返回主界面
+    detect_end_process = Process(target=detect_png, args=("end.png",))
     detect_end_process.daemon = True
     detect_end_process.start()
 
@@ -405,7 +406,11 @@ def main():
         sys.exit()
 
     if choice in ["1", "2", "3"]:
-        detect_start_process = Process(target=detect_png, args=(start_path,))
+
+        # 启动识别end.png子进程，点击end.png
+        run_count = Value('i', 0)  # 'i' 表示整型
+        lock2 = Lock()
+        detect_start_process = Process(target=detect_start_png, args=(start_path, run_count, lock2, total_count))
         detect_start_process.daemon = True
         detect_start_process.start()
 
