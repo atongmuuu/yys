@@ -349,7 +349,7 @@ def main():
     detect_end2_process.daemon = True
     detect_end2_process.start()
 
-    # 启动失败子进程，点击fanhui.png返回主界面
+    # 启动失败子进程，点击tupo_shibai.png返回主界面
     detect_shibai_process = Process(target=detect_png, args=("tupo_shibai.png",))
     detect_shibai_process.daemon = True
     detect_shibai_process.start()
@@ -391,7 +391,7 @@ def main():
         kun28_queren_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_queren.png")
         kun28_boss_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_boss.png")
         kun28_jiangli_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_jiangli.png")
-        shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_shishenlu.png")
+        kun28_shishenlu_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "imgs", "kun28_shishenlu.png")
 
         # 启动绘卷进程
         xiaoHuiJuan_count = Value('i', 0)  # 'i' 表示整型
@@ -427,7 +427,7 @@ def main():
 
         while True:
             in_tupo = False
-            time.sleep(2)
+            time.sleep(4)
             # 识别关闭
             kun28_guanbi_result = find_image_on_screen(kun28_guanbi_path)
             if kun28_guanbi_result:
@@ -487,6 +487,9 @@ def main():
                         with lock5:
                             if tupo_zero_value.value == 1:
                                 break
+                    # 检查是否需要退出外层循环
+                    with lock5:
+                        tupo_zero_value.value = 0
             time.sleep(5)
             # 识别kun28_ershiba.png
             ershiba_result = find_image_on_screen(kun28_ershiba_path)
@@ -515,7 +518,6 @@ def main():
                     if kun28_drag_result:
                         kun28_drag_x, kun28_drag_y = kun28_drag_result
                         # 鼠标点击kun28_drag_x, kun28_drag_y位置将向左移动700个像素
-                        pyautogui.FAILSAFE = True
                         # 点击并按住不放
                         pyautogui.mouseDown(x=kun28_drag_x, y=kun28_drag_y)
                         # 向左移动700像素
@@ -574,10 +576,10 @@ def main():
                                 jiangli_x, jiangli_y = jiangli_result
                                 random_click(jiangli_x, jiangli_y, kun28_jiangli_path)
                                 time.sleep(1)
-                                shishenlu_result = find_image_on_screen(shishenlu_path)
+                                shishenlu_result = find_image_on_screen(kun28_shishenlu_path)
                                 if shishenlu_result:
                                     shishenlu_x, shishenlu_y = shishenlu_result
-                                    random_click(shishenlu_x, shishenlu_y, shishenlu_path)
+                                    random_click(shishenlu_x, shishenlu_y, kun28_shishenlu_path)
                                     time.sleep(1)
                                 print("点击奖励")
                         else:
